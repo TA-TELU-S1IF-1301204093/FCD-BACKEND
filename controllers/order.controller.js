@@ -70,3 +70,71 @@ export const addOrder = async (req, res) => {
     return res.status(200).json({ status: "error", message: error.message });
   }
 };
+
+// view all orders data from user id which has dates of today
+export const todayOrders = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    // get all orders with todays date from the user
+    const userData = await User.findOne({ _id }).populate({
+      path: "orders",
+      match: {
+        date: `${
+          new Date().getDate() < 10
+            ? "0" + new Date().getDate()
+            : new Date().getDate()
+        }-${
+          new Date().getMonth() < 10
+            ? "0" + (new Date().getMonth() + 1)
+            : new Date().getMonth() + 1
+        }-${new Date().getFullYear()}`,
+      },
+    });
+
+    if (userData) {
+      return res.status(200).json({
+        status: "success",
+        message: "order data found",
+        data: userData.orders,
+      });
+    } else {
+      return res.status(200).json({
+        status: "error",
+        message: "order data not found",
+      });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
+
+// delete an order
+export const deleteOrder = async (req, res) => {
+  try {
+    const { orderId, userId } = req.body;
+
+    // delete from the order db then delete from orders list from user db
+    const orderData = await Order.findOneAndDelete({ _id: orderId });
+    if (orderData) {
+      await User.findByIdAndUpdate(
+        { _id: userId },
+        {
+          $pull: { orders: orderId },
+        }
+      ).then(() => {
+        return res.status(200).json({
+          status: "success",
+          message: "order data deleted succesfully",
+        });
+      });
+    } else {
+      return res.status(200).json({
+        status: "error",
+        message: "order data with given id not found",
+      });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
