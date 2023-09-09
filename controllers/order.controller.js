@@ -74,29 +74,27 @@ export const addOrder = async (req, res) => {
 // view all orders data from user id which has dates of today
 export const todayOrders = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { userId } = req.body;
 
     // get all orders with todays date from the user
-    const userData = await User.findOne({ _id }).populate({
-      path: "orders",
-      match: {
-        date: `${
-          new Date().getDate() < 10
-            ? "0" + new Date().getDate()
-            : new Date().getDate()
-        }-${
-          new Date().getMonth() < 10
-            ? "0" + (new Date().getMonth() + 1)
-            : new Date().getMonth() + 1
-        }-${new Date().getFullYear()}`,
-      },
+    const orderData = await Order.find({
+      user: userId,
+      date: `${
+        new Date().getDate() < 10
+          ? "0" + new Date().getDate()
+          : new Date().getDate()
+      }-${
+        new Date().getMonth() < 10
+          ? "0" + (new Date().getMonth() + 1)
+          : new Date().getMonth() + 1
+      }-${new Date().getFullYear()}`,
     });
 
-    if (userData) {
+    if (orderData) {
       return res.status(200).json({
         status: "success",
         message: "order data found",
-        data: userData.orders,
+        data: orderData,
       });
     } else {
       return res.status(200).json({
@@ -133,6 +131,64 @@ export const deleteOrder = async (req, res) => {
         status: "error",
         message: "order data with given id not found",
       });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
+
+// search order by date (summary order)
+export const summaryOrder = async (req, res) => {
+  try {
+    const { date, userId } = req.body;
+
+    // get all orders form the user with matching date
+    const userOrder = await Order.find({ user: userId, date: date });
+
+    console.log(userOrder);
+
+    if (userOrder) {
+      return res.status(200).json({
+        status: "success",
+        message: "Order data found",
+        data: userOrder,
+      });
+    } else {
+      console.log(userOrder);
+      return res.status(200).json({
+        status: "error",
+        message: "order data not found",
+      });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
+
+// search order by name (searc)
+
+export const searchOrder = async (req, res) => {
+  try {
+    const { name, userId } = req.body;
+
+    const orderData = await Order.find({ user: userId });
+
+    let result = [];
+
+    orderData.forEach((element) => {
+      if (element.name.includes(name)) {
+        result.push(element);
+      }
+    });
+
+    if (result.length > 0) {
+      return res
+        .status(200)
+        .json({ status: "success", message: "order data found", data: result });
+    } else {
+      return res
+        .status(200)
+        .json({ status: "error", message: "order data not found" });
     }
   } catch (error) {
     return res.status(200).json({ status: "error", message: error.message });
