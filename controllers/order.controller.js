@@ -194,3 +194,25 @@ export const searchOrder = async (req, res) => {
     return res.status(200).json({ status: "error", message: error.message });
   }
 };
+
+// get detail order (for deleting order data by order id)
+export const orderDetail = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    const orderData = await Order.findOne({ _id: orderId });
+    if (orderData) {
+      return res.status(200).json({
+        status: "success",
+        message: "order data found",
+        data: orderData,
+      });
+    } else {
+      return res
+        .status(200)
+        .json({ status: "error", message: "order data not found" });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
