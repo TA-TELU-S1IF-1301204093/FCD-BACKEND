@@ -8,6 +8,7 @@ dotenv.config();
 // import routes
 import authRoute from "./routes/auth.route.js";
 import orderRoute from "./routes/order.route.js";
+import userRoute from "./routes/user.route.js";
 
 // define application
 const app = express();
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 // auth routes
 app.use("/auth", authRoute);
 app.use("/orders", orderRoute);
+app.use("/user", userRoute);
 
 // connect to database
 mongoose
