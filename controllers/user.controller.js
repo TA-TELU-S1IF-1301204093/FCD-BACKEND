@@ -111,3 +111,35 @@ export const fetchUser = async (req, res) => {
     return res.status(200).json({ status: "error", message: error.message });
   }
 };
+
+export const decodeUserToken = async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+
+    if (token) {
+      jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+        if (err) {
+          return res
+            .status(403)
+            .json({ status: "error", message: "invalid token" });
+        } else {
+          return res.status(200).json({
+            status: "success",
+            message: "token berhasil didecode",
+            data: {
+              id: decoded.id,
+              name: decoded.name,
+              email: decoded.email,
+            },
+          });
+        }
+      });
+    } else {
+      return res
+        .status(403)
+        .json({ status: "error", message: "token not provided" });
+    }
+  } catch (error) {
+    return res.status(200).json({ status: "error", message: error.message });
+  }
+};
