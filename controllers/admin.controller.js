@@ -148,7 +148,95 @@ export const getAllUsers = async (req, res) => {
 };
 
 // delete user
+export const deleteUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    const user = await User.findById({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "user not found",
+      });
+    }
+    // delete semua order dari user tersebut
+    await Order.deleteMany({ user: userId });
+
+    // delete user tersebut
+    await User.findByIdAndDelete({ _id: userId });
+
+    return res.status(200).json({
+      status: "success",
+      message: "user deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
 // get all orders from all users
+export const getAllOrderFromUsers = async (req, res) => {
+  try {
+    const orderData = await Order.find({});
+    if (orderData.length > 0) {
+      return res.status(200).json({
+        status: "success",
+        message: "orders data found",
+        data: orderData,
+      });
+    } else {
+      return res.status(404).json({
+        status: "error",
+        message: "orders data not found",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
+
 // get all orders from a user
+export const getAllOrderFromOneUser = async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    // check the user
+    const user = await User.findById({ _id: userId });
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "user not found",
+      });
+    }
+    // get the order data
+    const orderData = await Order.find({ user: userId });
+
+    if (orderData.length > 0) {
+      return res.status(200).json({
+        status: "success",
+        message: "orders data found",
+        data: orderData,
+      });
+    } else {
+      return res.status(404).json({
+        status: "error",
+        message: "orders data not found",
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
+  }
+};
 // delete all orders from all users
 // detele all orders from specific user
