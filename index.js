@@ -25,7 +25,7 @@ app.use(morgan("dev"));
 
 // basic api endpoint
 app.get("/", (req, res) => {
-  res.status(200).json({ status: "OK", message: "API MNote" });
+    res.status(200).json({ status: "OK", message: "API MNote" });
 });
 
 // auth routes
@@ -39,20 +39,20 @@ app.use("/api/admin", adminRoute);
 
 // connect to database
 mongoose
-  .connect(
-    process.env.NODE_ENV === "production"
-      ? process.env.MONGO_URI_PROD
-      : process.env.MONGO_URI,
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => {
-    console.log(
-      `Connected to database : ${mongoose.connection.db.databaseName}`
-    );
-    app.listen(process.env.PORT || 80, () => {
-      console.log(`Server running on localhost port ${process.env.PORT}`);
+    .connect(
+        process.env.NODE_ENV === "production"
+            ? process.env.MONGO_URI_PROD
+            : process.env.MONGO_URI,
+        {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        }
+    )
+    .then(() => {
+        console.log(
+            `Connected to database : ${mongoose.connection.db.databaseName}`
+        );
+        app.listen(process.env.PORT || 80, () => {
+            console.log(`Server running on localhost port ${process.env.PORT}`);
+        });
     });
-  });

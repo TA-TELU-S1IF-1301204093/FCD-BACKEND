@@ -37,43 +37,48 @@ import jwt from "jsonwebtoken";
 // };
 
 export const Signin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
 
-    // check if user not exist
-    const isExist = await User.findOne({ email: email });
+        // check if user not exist
+        const isExist = await User.findOne({ email: email });
 
-    if (isExist) {
-      const checkPassword = await bcrypt.compare(password, isExist.password);
+        if (isExist) {
+            const checkPassword = await bcrypt.compare(
+                password,
+                isExist.password
+            );
 
-      if (checkPassword) {
-        //  create token
-        const token = jwt.sign(
-          {
-            id: isExist._id,
-            name: isExist.name,
-            email: isExist.email,
-            password: isExist.password,
-          },
-          process.env.SECRET_KEY
-        );
+            if (checkPassword) {
+                //  create token
+                const token = jwt.sign(
+                    {
+                        id: isExist._id,
+                        name: isExist.name,
+                        email: isExist.email,
+                        password: isExist.password,
+                    },
+                    process.env.SECRET_KEY
+                );
 
-        return res.status(200).json({
-          status: "success",
-          message: "login success",
-          token: token,
-        });
-      } else {
+                return res.status(200).json({
+                    status: "success",
+                    message: "login success",
+                    token: token,
+                });
+            } else {
+                return res
+                    .status(200)
+                    .json({ status: "error", message: "invalid password" });
+            }
+        } else {
+            return res
+                .status(200)
+                .json({ status: "error", message: "User not exists" });
+        }
+    } catch (error) {
         return res
-          .status(200)
-          .json({ status: "error", message: "invalid password" });
-      }
-    } else {
-      return res
-        .status(200)
-        .json({ status: "error", message: "User not exists" });
+            .status(200)
+            .json({ status: "error", message: error.message });
     }
-  } catch (error) {
-    return res.status(200).json({ status: "error", message: error.message });
-  }
 };

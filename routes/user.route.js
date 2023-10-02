@@ -2,9 +2,9 @@ import express from "express";
 const router = express.Router();
 
 import {
-  fetchUser,
-  settings,
-  decodeUserToken,
+    fetchUser,
+    settings,
+    decodeUserToken,
 } from "../controllers/user.controller.js";
 
 router.get("/", fetchUser);
