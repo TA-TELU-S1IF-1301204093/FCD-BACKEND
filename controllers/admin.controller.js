@@ -30,7 +30,7 @@ export const createAdmin = async (req, res) => {
                 message: "User created successfully",
             });
         } else {
-            return res.status(200).json({
+            return res.status(409).json({
                 status: "error",
                 message: "User already exists",
             });
@@ -77,12 +77,12 @@ export const loginAdmin = async (req, res) => {
                 });
             } else {
                 return res
-                    .status(200)
+                    .status(401)
                     .json({ status: "error", message: "invalid password" });
             }
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "User not exists" });
         }
     } catch (error) {
@@ -119,7 +119,7 @@ export const createUser = async (req, res) => {
             });
         } else {
             return res
-                .status(200)
+                .status(409)
                 .json({ status: "error", message: "User already exists" });
         }
     } catch (error) {}
@@ -128,7 +128,7 @@ export const createUser = async (req, res) => {
 // get all users
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: "user" });
+        const users = await User.find();
 
         if (users.length > 0) {
             return res.status(200).json({
@@ -262,12 +262,12 @@ export const deleteAllorders = async (req, res) => {
             user.orders = [];
 
             await user.save();
-
-            return res.status(200).json({
-                status: "success",
-                message: "Orders deleted successfully",
-            });
         }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Orders deleted successfully",
+        });
     } catch (error) {
         return res
             .status(500)
@@ -302,5 +302,16 @@ export const deleteAllOrderFromUser = async (req, res) => {
         return res
             .status(500)
             .json({ status: "error", message: error.message });
+    }
+};
+
+export const manageOrderPrice = async (req, res) => {
+    try {
+        const { name, price } = req.body;
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
     }
 };

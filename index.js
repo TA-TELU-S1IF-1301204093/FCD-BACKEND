@@ -4,7 +4,7 @@ import cors from "cors	";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 dotenv.config();
-import morgan from "morgan";
+// import morgan from "morgan";
 
 // import routes
 import authRoute from "./routes/auth.route.js";
@@ -21,7 +21,7 @@ app.options("*", cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // dev only
-app.use(morgan("dev"));
+// app.use(morgan("dev"));
 
 // basic api endpoint
 app.get("/", (req, res) => {
