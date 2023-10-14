@@ -24,7 +24,6 @@ export const settings = async (req, res) => {
                     }
                 );
 
-                console.log(newUpdatedUser);
                 const token = jwt.sign(
                     {
                         id: newUpdatedUser._id,
@@ -34,7 +33,7 @@ export const settings = async (req, res) => {
                     },
                     process.env.SECRET_KEY
                 );
-                return res.status(200).json({
+                return res.status(201).json({
                     status: "success",
                     message: "user data updated successfully",
                     token: token,
@@ -53,7 +52,6 @@ export const settings = async (req, res) => {
                     }
                 );
 
-                console.log(newUpdatedUser);
                 const token = jwt.sign(
                     {
                         id: newUpdatedUser._id,
@@ -63,7 +61,7 @@ export const settings = async (req, res) => {
                     },
                     process.env.SECRET_KEY
                 );
-                return res.status(200).json({
+                return res.status(201).json({
                     status: "success",
                     message: "user data updated successfully",
                     token: token,
@@ -71,12 +69,12 @@ export const settings = async (req, res) => {
             }
         } else {
             return res
-                .status(200)
+                .status(400)
                 .json({ status: "error", message: "empty data" });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -108,12 +106,12 @@ export const fetchUser = async (req, res) => {
             });
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "User not found" });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -148,7 +146,7 @@ export const decodeUserToken = async (req, res) => {
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };

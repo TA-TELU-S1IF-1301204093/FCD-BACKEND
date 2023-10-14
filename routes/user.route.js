@@ -7,7 +7,7 @@ import {
     decodeUserToken,
 } from "../controllers/user.controller.js";
 
-router.get("/", fetchUser);
+router.post("/", fetchUser);
 router.get("/decode", decodeUserToken);
 router.put("/settings", settings);
 

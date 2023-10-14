@@ -2,39 +2,41 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-// export const Signup = async (req, res) => {
-//   try {
-//     const { name, email, password } = req.body;
+export const Signup = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
 
-//     // check if user already exists
-//     const isExist = await User.findOne({ email: email });
+        // check if user already exists
+        const isExist = await User.findOne({ email: email });
 
-//     if (isExist === null) {
-//       // ecnrypt password
-//       const encryptedPassword = await bcrypt.hash(password, 15);
-//       // create new user
-//       const user = new User({
-//         name: name,
-//         email: email,
-//         password: encryptedPassword,
-//       });
+        if (isExist === null) {
+            // ecnrypt password
+            const encryptedPassword = await bcrypt.hash(password, 15);
+            // create new user
+            const user = new User({
+                name: name,
+                email: email,
+                password: encryptedPassword,
+            });
 
-//       await user.save();
+            await user.save();
 
-//       return res.status(201).json({
-//         status: "success",
-//         message: "User created successfully",
-//         data: user,
-//       });
-//     } else {
-//       return res
-//         .status(200)
-//         .json({ status: "error", message: "User already exists" });
-//     }
-//   } catch (error) {
-//     return res.status(200).json({ status: "error", message: error.message });
-//   }
-// };
+            return res.status(201).json({
+                status: "success",
+                message: "User created successfully",
+                data: user,
+            });
+        } else {
+            return res
+                .status(409)
+                .json({ status: "error", message: "User already exists" });
+        }
+    } catch (error) {
+        return res
+            .status(500)
+            .json({ status: "error", message: error.message });
+    }
+};
 
 export const Signin = async (req, res) => {
     try {
@@ -68,17 +70,17 @@ export const Signin = async (req, res) => {
                 });
             } else {
                 return res
-                    .status(200)
+                    .status(401)
                     .json({ status: "error", message: "invalid password" });
             }
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "User not exists" });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 
 import User from "../models/User.js";
 import Order from "../models/Order.js";
+import Price from "../models/Price.js";
 
 // create admin
 export const createAdmin = async (req, res) => {
@@ -30,7 +31,7 @@ export const createAdmin = async (req, res) => {
                 message: "User created successfully",
             });
         } else {
-            return res.status(200).json({
+            return res.status(409).json({
                 status: "error",
                 message: "User already exists",
             });
@@ -77,12 +78,12 @@ export const loginAdmin = async (req, res) => {
                 });
             } else {
                 return res
-                    .status(200)
+                    .status(401)
                     .json({ status: "error", message: "invalid password" });
             }
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "User not exists" });
         }
     } catch (error) {
@@ -119,7 +120,7 @@ export const createUser = async (req, res) => {
             });
         } else {
             return res
-                .status(200)
+                .status(409)
                 .json({ status: "error", message: "User already exists" });
         }
     } catch (error) {}
@@ -128,7 +129,7 @@ export const createUser = async (req, res) => {
 // get all users
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({ role: "user" });
+        const users = await User.find();
 
         if (users.length > 0) {
             return res.status(200).json({
@@ -262,12 +263,12 @@ export const deleteAllorders = async (req, res) => {
             user.orders = [];
 
             await user.save();
-
-            return res.status(200).json({
-                status: "success",
-                message: "Orders deleted successfully",
-            });
         }
+
+        return res.status(200).json({
+            status: "success",
+            message: "Orders deleted successfully",
+        });
     } catch (error) {
         return res
             .status(500)
@@ -302,5 +303,143 @@ export const deleteAllOrderFromUser = async (req, res) => {
         return res
             .status(500)
             .json({ status: "error", message: error.message });
+    }
+};
+
+export const addOrderPrice = async (req, res) => {
+    try {
+        const { name, price } = req.body;
+
+        if (name && price) {
+            const newPrice = new Price({
+                name: name.toLowerCase(),
+                price: price,
+            });
+
+            await newPrice.save();
+
+            return res.status(201).json({
+                status: "success",
+                message: "Succesfully add new order price",
+                data: newPrice,
+            });
+        } else {
+            return res.status(400).json({
+                status: "error",
+                message: "empty data",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
+    }
+};
+
+export const getAllOrderPrice = async (req, res) => {
+    try {
+        const orderPriceData = await Price.find({});
+
+        if (orderPriceData) {
+            return res.status(200).json({
+                status: "success",
+                message: "Order price data found",
+                data: orderPriceData,
+            });
+        } else {
+            return res.status(404).json({
+                status: "error",
+                message: "Order price data not found",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
+    }
+};
+
+export const getOrderPrice = async (req, res) => {
+    try {
+        const { name } = req.body;
+
+        if (name) {
+            const findOrder = await Price.findOne({
+                name: name.toLowerCase(),
+            });
+
+            if (findOrder) {
+                return res.status(200).json({
+                    status: "success",
+                    message: "Order price data found",
+                    data: findOrder,
+                });
+            } else {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Order price data not found",
+                });
+            }
+        } else {
+            return res.status(400).json({
+                status: "error",
+                message: "empty data",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
+    }
+};
+
+export const editOrderPrice = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        const { price } = req.body;
+
+        if (orderId) {
+            const findOrder = await Price.findOne({
+                _id: orderId,
+            });
+
+            if (findOrder) {
+                const updateOrderPrice = await Price.findOneAndUpdate(
+                    {
+                        _id: orderId,
+                    },
+                    {
+                        price: price,
+                    },
+                    {
+                        returnOriginal: false,
+                    }
+                );
+
+                return res.status(201).json({
+                    status: "success",
+                    message: "successfully update order price data",
+                    data: updateOrderPrice,
+                });
+            } else {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Order not found",
+                });
+            }
+        } else {
+            return res.status(400).json({
+                status: "error",
+                message: "empty data",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
     }
 };

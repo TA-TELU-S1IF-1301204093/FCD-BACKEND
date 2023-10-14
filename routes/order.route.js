@@ -11,8 +11,8 @@ import {
 
 router.post("/order", addOrder);
 router.post("/", todayOrders);
-router.delete("/order", deleteOrder);
-router.get("/summary", summaryOrder);
+router.delete("/order/:orderId/:userId", deleteOrder);
+router.post("/summary", summaryOrder);
 router.post("/search", searchOrder);
 router.post("/detail", orderDetail);
 

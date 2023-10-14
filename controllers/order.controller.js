@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import User from "../models/User.js";
+import Price from "../models/Price.js";
 
 // create a new order data
 export const addOrder = async (req, res) => {
@@ -12,7 +13,7 @@ export const addOrder = async (req, res) => {
                 ? "0" + new Date().getDate()
                 : new Date().getDate()
         }-${
-            new Date().getMonth() < 10
+            new Date().getMonth() < 9
                 ? "0" + (new Date().getMonth() + 1)
                 : new Date().getMonth() + 1
         }-${new Date().getFullYear()}`;
@@ -24,51 +25,55 @@ export const addOrder = async (req, res) => {
                 _id: _id,
             });
 
-            // create the price
-            let price = 0;
-            if (name.includes("nasi") && !name.includes("ayam")) {
-                price = 13000;
-            } else if (name.includes("dingin")) {
-                price = 7000;
-            } else if (name === "nasi") {
-                price = 5000;
-            } else if (name.includes("nasi")) {
-                price = 15000;
-            }
-
             if (userData) {
-                const newOrder = new Order({
-                    name: name,
-                    amount: amount,
-                    price: price * amount,
-                    date: currentDate,
-                    user: userData._id,
+                // get the items price
+                const getPrice = await Price.findOne({
+                    name: name.toLowerCase(),
                 });
+                if (getPrice) {
+                    const newOrder = new Order({
+                        name: name,
+                        amount: amount,
+                        price: getPrice.price * amount,
+                        date: currentDate,
+                        user: userData._id,
+                    });
 
-                // save to database
-                await newOrder.save();
+                    // save to database
+                    await newOrder.save();
 
-                // add the new order _id to orders in user db
-                await User.findByIdAndUpdate(
-                    {
-                        _id: userData._id,
-                    },
-                    {
-                        $push: { orders: newOrder._id },
-                    }
-                );
+                    // add the new order _id to orders in user db
+                    await User.findByIdAndUpdate(
+                        {
+                            _id: userData._id,
+                        },
+                        {
+                            $push: { orders: newOrder._id },
+                        }
+                    );
 
-                // return the order data
-                return res.status(201).json({
-                    status: "success",
-                    message: "new order data added successfully",
-                    data: newOrder,
+                    // return the order data
+                    return res.status(201).json({
+                        status: "success",
+                        message: "new order data added successfully",
+                        data: newOrder,
+                    });
+                } else {
+                    return res.status(404).json({
+                        status: "error",
+                        message: "Invalid menu name",
+                    });
+                }
+            } else {
+                return res.status(401).json({
+                    status: "error",
+                    message: "Invalid user",
                 });
             }
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -86,7 +91,7 @@ export const todayOrders = async (req, res) => {
                     ? "0" + new Date().getDate()
                     : new Date().getDate()
             }-${
-                new Date().getMonth() < 10
+                new Date().getMonth() < 9
                     ? "0" + (new Date().getMonth() + 1)
                     : new Date().getMonth() + 1
             }-${new Date().getFullYear()}`,
@@ -99,14 +104,14 @@ export const todayOrders = async (req, res) => {
                 data: orderData,
             });
         } else {
-            return res.status(200).json({
+            return res.status(404).json({
                 status: "error",
                 message: "order data not found",
             });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -114,7 +119,7 @@ export const todayOrders = async (req, res) => {
 // delete an order
 export const deleteOrder = async (req, res) => {
     try {
-        const { orderId, userId } = req.body;
+        const { orderId, userId } = req.params;
 
         // delete from the order db then delete from orders list from user db
         const orderData = await Order.findOneAndDelete({ _id: orderId });
@@ -131,14 +136,14 @@ export const deleteOrder = async (req, res) => {
                 });
             });
         } else {
-            return res.status(200).json({
+            return res.status(404).json({
                 status: "error",
                 message: "order data with given id not found",
             });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -151,8 +156,6 @@ export const summaryOrder = async (req, res) => {
         // get all orders form the user with matching date
         const userOrder = await Order.find({ user: userId, date: date });
 
-        console.log(userOrder);
-
         if (userOrder) {
             return res.status(200).json({
                 status: "success",
@@ -160,15 +163,14 @@ export const summaryOrder = async (req, res) => {
                 data: userOrder,
             });
         } else {
-            console.log(userOrder);
-            return res.status(200).json({
+            return res.status(404).json({
                 status: "error",
                 message: "order data not found",
             });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -190,21 +192,19 @@ export const searchOrder = async (req, res) => {
         });
 
         if (result.length > 0) {
-            return res
-                .status(200)
-                .json({
-                    status: "success",
-                    message: "order data found",
-                    data: result,
-                });
+            return res.status(200).json({
+                status: "success",
+                message: "order data found",
+                data: result,
+            });
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "order data not found" });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -223,12 +223,12 @@ export const orderDetail = async (req, res) => {
             });
         } else {
             return res
-                .status(200)
+                .status(404)
                 .json({ status: "error", message: "order data not found" });
         }
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };

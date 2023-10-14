@@ -17,7 +17,7 @@ export const fetchHelp = async (req, res) => {
             });
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
     }
 };
@@ -40,7 +40,53 @@ export const createHelp = async (req, res) => {
         });
     } catch (error) {
         return res
-            .status(200)
+            .status(500)
             .json({ status: "error", message: error.message });
+    }
+};
+
+export const deleteAllHelp = async (req, res) => {
+    try {
+        const deletedHelp = await Help.deleteMany({});
+
+        return res.status(200).json({
+            status: "success",
+            message: "deleted help data succesfully",
+            data: {
+                deletedCount: deletedHelp.deletedCount,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
+    }
+};
+
+export const deleteOneHelp = async (req, res) => {
+    try {
+        const { helpId } = req.params;
+
+        const deleteHelp = await Help.findOneAndDelete({
+            _id: helpId,
+        });
+
+        if (deleteHelp) {
+            return res.status(200).json({
+                status: "success",
+                message: "deleted help data succesfully",
+            });
+        } else {
+            return res.status(404).json({
+                status: "error",
+                message: "help data not found",
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: error.message,
+        });
     }
 };
