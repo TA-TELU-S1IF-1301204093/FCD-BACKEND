@@ -1,5 +1,6 @@
 import Order from "../models/Order.js";
 import User from "../models/User.js";
+import Price from "../models/Price.js";
 
 // create a new order data
 export const addOrder = async (req, res) => {
@@ -24,47 +25,49 @@ export const addOrder = async (req, res) => {
                 _id: _id,
             });
 
-            // create the price
-            let price = 0;
-            if (name.includes("nasi") && !name.includes("ayam")) {
-                price = 13000;
-            } else if (name.includes("ayam") && !name.includes("nasi")) {
-                price = 10000;
-            } else if (name.includes("dingin")) {
-                price = 7000;
-            } else if (name === "nasi") {
-                price = 5000;
-            } else if (name.includes("nasi")) {
-                price = 15000;
-            }
-
             if (userData) {
-                const newOrder = new Order({
-                    name: name,
-                    amount: amount,
-                    price: price * amount,
-                    date: currentDate,
-                    user: userData._id,
+                // get the items price
+                const getPrice = await Price.findOne({
+                    name: name.toLowerCase(),
                 });
+                if (getPrice) {
+                    const newOrder = new Order({
+                        name: name,
+                        amount: amount,
+                        price: getPrice.price * amount,
+                        date: currentDate,
+                        user: userData._id,
+                    });
 
-                // save to database
-                await newOrder.save();
+                    // save to database
+                    await newOrder.save();
 
-                // add the new order _id to orders in user db
-                await User.findByIdAndUpdate(
-                    {
-                        _id: userData._id,
-                    },
-                    {
-                        $push: { orders: newOrder._id },
-                    }
-                );
+                    // add the new order _id to orders in user db
+                    await User.findByIdAndUpdate(
+                        {
+                            _id: userData._id,
+                        },
+                        {
+                            $push: { orders: newOrder._id },
+                        }
+                    );
 
-                // return the order data
-                return res.status(201).json({
-                    status: "success",
-                    message: "new order data added successfully",
-                    data: newOrder,
+                    // return the order data
+                    return res.status(201).json({
+                        status: "success",
+                        message: "new order data added successfully",
+                        data: newOrder,
+                    });
+                } else {
+                    return res.status(404).json({
+                        status: "error",
+                        message: "Invalid menu name",
+                    });
+                }
+            } else {
+                return res.status(401).json({
+                    status: "error",
+                    message: "Invalid user",
                 });
             }
         }
